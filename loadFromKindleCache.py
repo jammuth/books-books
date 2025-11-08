@@ -125,7 +125,6 @@ def convert_xml_to_json(src_file):
 
       if existing_book is not None:
         logging.error(f"Duplicate Book Found {book_info['asin'], book_info['title']} already exists in JSON data")
-        logging.error(f"{jsondata['books'].index(existing_book)['id']} - {existing_book['title']}")
         continue
 
       jsondata["books"].append(book_info)
