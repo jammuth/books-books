@@ -18,7 +18,6 @@ def main():
       id = db.add_item(jsondata)
       logging.info(f"Data uploaded to Firestore with document ID: {id}")
       save_json_file(jsondata)
-      
 
 if __name__ == "__main__":
   main()
