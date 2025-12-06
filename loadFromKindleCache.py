@@ -1,11 +1,21 @@
 import json
-import os,sys
+import os
+import logging
 from datetime import datetime, timedelta
 import xml.etree.ElementTree as ET
-from ElementTree_pretty import prettify
-import logging
+from xml.dom import minidom
 
-logging.basicConfig(filename=".\\logs\\app.log", level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+log_date = datetime.now().strftime("%Y%m%d")
+log_filename = f".\\logs\\app-{log_date}.log"
+logging.basicConfig(filename=log_filename, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def prettify(elem):
+    """Return a pretty-printed XML string for the Element.
+    """
+    rough_string = ET.tostring(elem, 'utf-8')
+    reparsed = minidom.parseString(rough_string)
+    return reparsed.toprettyxml(indent="  ")
 
 def copy_src_file(kindle_cache_path="None", copy_of_xml_path="None"):
   src = kindle_cache_path
@@ -64,6 +74,7 @@ def convert_xml_to_json(src_file):
       book_info["authors"] = [author.text for author in book.find("authors").findall("author")] if book.findall("authors") else ["Unknown"]
       book_info["asin"] = book.find("ASIN").text if book.find("ASIN") is not None else "Unknown"
       book_info["asin"] = book_info["asin"].strip()
+      book_info["amazon_link"] = f"https://www.amazon.co.uk/dp/{book_info['asin']}"
       
       logging.info(f"processing book {book_info['title']} with ASIN {book_info['asin']}")
       
@@ -112,8 +123,6 @@ def convert_xml_to_json(src_file):
       if purchase_date_obj > datetime.now() - timedelta(days=365):
         books_purchased_365_days += 1
       
-      
-      
       #convert dates to string format
       book_info["publication_date"] = publication_date_obj.strftime("%Y-%m-%dT%H:%M:%S")
       book_info["purchase_date"] = purchase_date_obj.strftime("%Y-%m-%dT%H:%M:%S")
@@ -129,7 +138,7 @@ def convert_xml_to_json(src_file):
 
       jsondata["books"].append(book_info)
       bookcount += 1
-    ##meta_data
+    # meta_data
     jsondata["summary"] = {
       "sync_date": last_sync_date.strftime("%Y-%m-%dT%H:%M:%S"),
       "books_processed": bookcount,
